@@ -11,7 +11,7 @@ object DiMacro {
   def wire_impl[T: c.WeakTypeTag](c: Context): c.Expr[T] = {
     import c.universe._
 
-    // TODO: this should check if the found value uses wired[], or is just a value of the desired type
+    // TODO: this should check if the found value uses wired[]; now any value of the desired type will be returned
     def findWiredOfType(t: Type): Option[Name] = {
       @tailrec
       def doFind(trees: List[Tree]): Option[Name] = trees match {
