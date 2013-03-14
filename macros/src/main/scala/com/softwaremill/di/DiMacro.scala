@@ -11,6 +11,7 @@ object DiMacro {
   def wire_impl[T: c.WeakTypeTag](c: Context): c.Expr[T] = {
     import c.universe._
 
+    // TODO: this should check if the found value uses wired[], or is just a value of the desired type
     def findWiredOfType(t: Type): Option[Name] = {
       @tailrec
       def doFind(trees: List[Tree]): Option[Name] = trees match {
@@ -19,6 +20,7 @@ object DiMacro {
           None
         }
         case tree :: tail => tree match {
+          // TODO: subtyping
           case ValDef(_, name, tpt, _) if tpt.tpe == t => Some(name.encodedName)
           case _ => doFind(tail)
         }
@@ -49,15 +51,11 @@ object DiMacro {
           Ident(wireTo)
         }
 
-        c.Expr(Apply(newT, constructorParams))
+        val newTWithParams = Apply(newT, constructorParams)
+        c.info(c.enclosingPosition, s"Generated code: ${c.universe.show(newTWithParams)}", force = false)
+        c.Expr(newTWithParams)
       }
     }
-
-    println(tType)
-    println("---")
-
-    //println(c.universe.showRaw(c.enclosingClass))
-    Apply(Select(New(Ident(newTypeName("C"))), nme.CONSTRUCTOR), List(Ident(newTermName("a")), Ident(newTermName("b"))))
 
     result
   }
